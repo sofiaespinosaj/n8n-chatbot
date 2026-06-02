@@ -1,12 +1,61 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal de Soporte B2B - Inteligencia Artificial</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="config.js"></script>
+    <style>
+        /* Estilos para el contenido Markdown del bot */
+        .markdown-body p {
+            margin-bottom: 0.5rem;
+        }
+
+        .markdown-body p:last-child {
+            margin-bottom: 0;
+        }
+
+        .markdown-body strong {
+            font-weight: 600;
+            color: #f8fafc;
+        }
+
+        .markdown-body ul {
+            list-style-type: disc;
+            margin-left: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .markdown-body ol {
+            list-style-type: decimal;
+            margin-left: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .markdown-body table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .markdown-body th,
+        .markdown-body td {
+            border: 1px solid #475569;
+            padding: 0.35rem 0.5rem;
+            text-align: left;
+        }
+
+        .markdown-body th {
+            background-color: #334155;
+            font-weight: 600;
+        }
+    </style>
 </head>
+
 <body class="bg-slate-900 text-slate-100 min-h-screen flex items-center justify-center p-4">
 
     <div class="w-full max-w-2xl bg-slate-800 rounded-2xl shadow-2xl p-6 border border-slate-700">
@@ -23,24 +72,20 @@
                 <label for="mensaje" class="block text-sm font-medium text-slate-300 mb-2">
                     Describe detalladamente la falla técnica o el incidente:
                 </label>
-                <textarea 
-                    id="mensaje" 
-                    rows="6" 
-                    required
+                <textarea id="mensaje" rows="6" required
                     class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                    placeholder="Ej: Estimado equipo, registramos una caída crítica en nuestro entorno de producción desde las 08:00 AM..."
-                ></textarea>
+                    placeholder="Ej: Estimado equipo, registramos una caída crítica en nuestro entorno de producción desde las 08:00 AM..."></textarea>
             </div>
 
-            <button 
-                type="submit" 
-                id="btnEnviar"
-                class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-3 px-4 rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2"
-            >
+            <button type="submit" id="btnEnviar"
+                class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-3 px-4 rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2">
                 <span id="btnText">Enviar Incidente a Clasificación IA</span>
-                <svg id="spinner" class="animate-spin h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg id="spinner" class="animate-spin h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg"
+                    fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <path class="opacity-75" fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                    </path>
                 </svg>
             </button>
         </form>
@@ -53,64 +98,83 @@
     <!-- Chat Widget -->
     <div id="chatWidget" class="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
 
-        <div id="chatPanel" class="hidden w-80 bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 flex flex-col overflow-hidden" style="height:460px">
+        <div id="chatPanel"
+            class="hidden w-[400px] bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 flex flex-col overflow-hidden"
+            style="height:500px">
             <div class="bg-indigo-700 px-4 py-3 flex items-center justify-between flex-shrink-0">
                 <div class="flex items-center gap-2">
                     <div class="w-2 h-2 bg-emerald-400 rounded-full"></div>
                     <span class="text-white font-semibold text-sm">Agente de Soporte IA</span>
                 </div>
                 <button id="closeChat" class="text-white/60 hover:text-white transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
 
             <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-3">
-                <div class="flex">
-                    <div class="bg-slate-700 rounded-2xl rounded-tl-sm px-3 py-2 text-sm text-slate-200 max-w-xs leading-relaxed">
-                        Hola, describe tu incidente y lo analizo para ti.
+                <div class="flex" id="initialMessage">
+                    <div
+                        class="bg-slate-700 rounded-2xl rounded-tl-sm px-4 py-3 text-sm text-slate-200 max-w-[95%] leading-relaxed markdown-body">
+                        ¡Hola! Antes de comenzar, por favor selecciona tu rol:
+                        <div class="mt-3 flex flex-col gap-2" id="roleButtons">
+                            <button onclick="selectRole('estudiante')"
+                                class="bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg px-3 py-2 text-sm transition-colors text-left font-medium cursor-pointer">👨‍🎓
+                                Estudiante</button>
+                            <button onclick="selectRole('docente')"
+                                class="bg-slate-600 hover:bg-slate-500 text-white rounded-lg px-3 py-2 text-sm transition-colors text-left font-medium cursor-pointer">👨‍🏫
+                                Docente</button>
+                            <button onclick="selectRole('administrativo')"
+                                class="bg-slate-600 hover:bg-slate-500 text-white rounded-lg px-3 py-2 text-sm transition-colors text-left font-medium cursor-pointer">💼
+                                Administrativo</button>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div class="p-3 border-t border-slate-700 flex-shrink-0">
-                <div class="flex gap-2">
-                    <input
-                        id="chatInput"
-                        type="text"
-                        placeholder="Escribe tu incidente..."
+                <div class="flex gap-2 opacity-50 pointer-events-none transition-opacity duration-300"
+                    id="inputContainer">
+                    <input id="chatInput" type="text" placeholder="Escribe tu incidente..."
                         class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    />
-                    <button
-                        id="sendChatMsg"
-                        class="bg-indigo-600 hover:bg-indigo-500 text-white p-2 rounded-xl transition-colors flex-shrink-0"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                        disabled />
+                    <button id="sendChatMsg"
+                        class="bg-indigo-600 hover:bg-indigo-500 text-white p-2 rounded-xl transition-colors flex-shrink-0 cursor-pointer"
+                        disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                         </svg>
                     </button>
                 </div>
             </div>
         </div>
 
-        <button id="chatToggle" class="bg-indigo-600 hover:bg-indigo-500 w-14 h-14 rounded-full shadow-xl flex items-center justify-center transition-all hover:scale-110">
-            <svg id="iconChat" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+        <button id="chatToggle"
+            class="bg-indigo-600 hover:bg-indigo-500 w-14 h-14 rounded-full shadow-xl flex items-center justify-center transition-all hover:scale-110">
+            <svg id="iconChat" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none"
+                viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
-            <svg id="iconClose" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            <svg id="iconClose" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white hidden" fill="none"
+                viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
         </button>
     </div>
 
     <script>
         // Chat widget
-        const chatPanel    = document.getElementById('chatPanel');
+        const chatPanel = document.getElementById('chatPanel');
         const chatMessages = document.getElementById('chatMessages');
-        const chatInput    = document.getElementById('chatInput');
-        const iconChat     = document.getElementById('iconChat');
-        const iconClose    = document.getElementById('iconClose');
+        const chatInput = document.getElementById('chatInput');
+        const iconChat = document.getElementById('iconChat');
+        const iconClose = document.getElementById('iconClose');
 
         function toggleChat() {
             chatPanel.classList.toggle('hidden');
@@ -126,9 +190,14 @@
             row.className = isUser ? 'flex justify-end' : 'flex';
             const bubble = document.createElement('div');
             bubble.className = isUser
-                ? 'bg-indigo-600 rounded-2xl rounded-tr-sm px-3 py-2 text-sm text-white max-w-xs leading-relaxed'
-                : 'bg-slate-700 rounded-2xl rounded-tl-sm px-3 py-2 text-sm text-slate-200 max-w-xs leading-relaxed';
-            bubble.textContent = text;
+                ? 'bg-indigo-600 rounded-2xl rounded-tr-sm px-3 py-2 text-sm text-white max-w-[85%] leading-relaxed'
+                : 'bg-slate-700 rounded-2xl rounded-tl-sm px-4 py-3 text-sm text-slate-200 max-w-[95%] leading-relaxed markdown-body';
+
+            if (isUser) {
+                bubble.textContent = text;
+            } else {
+                bubble.innerHTML = marked.parse(text);
+            }
             row.appendChild(bubble);
             chatMessages.appendChild(row);
             chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -141,6 +210,56 @@
             row.innerHTML = '<div class="bg-slate-700 rounded-2xl rounded-tl-sm px-3 py-2 text-sm text-slate-400">Analizando...</div>';
             chatMessages.appendChild(row);
             chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function selectRole(role) {
+            const roleNames = {
+                estudiante: "👨‍🎓 Estudiante",
+                docente: "👨‍🏫 Docente",
+                administrativo: "💼 Administrativo"
+            };
+
+            // Ocultar botones iniciales si existen
+            const btns = document.getElementById('roleButtons');
+            if (btns) {
+                btns.style.display = 'none';
+                btns.id = ''; // remover ID para que no interfiera si se vuelven a generar
+            }
+
+            addBubble(roleNames[role], true);
+
+            if (role === 'estudiante') {
+                setTimeout(() => {
+                    addBubble("¡Perfecto! Ahora sí, describe tu incidente o duda y lo analizaré para ti.", false);
+                    // Habilitar el input
+                    const container = document.getElementById('inputContainer');
+                    container.classList.remove('opacity-50', 'pointer-events-none');
+                    document.getElementById('chatInput').disabled = false;
+                    document.getElementById('sendChatMsg').disabled = false;
+                    document.getElementById('chatInput').focus();
+                }, 500);
+            } else {
+                setTimeout(() => {
+                    addBubble("No tengo informacion a cerca de esto roles, intentalo mas adelante", false);
+
+                    // Mostrar los botones de nuevo por si se equivocó
+                    setTimeout(() => {
+                        const row = document.createElement('div');
+                        row.className = 'flex mt-2';
+                        row.innerHTML = `
+                        <div class="bg-slate-700 rounded-2xl rounded-tl-sm px-4 py-3 text-sm text-slate-200 max-w-[95%] leading-relaxed markdown-body">
+                            Si te equivocaste, puedes volver a seleccionar tu rol:
+                            <div class="mt-3 flex flex-col gap-2" id="roleButtons">
+                                <button onclick="selectRole('estudiante')" class="bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg px-3 py-2 text-sm transition-colors text-left font-medium cursor-pointer">👨‍🎓 Estudiante</button>
+                                <button onclick="selectRole('docente')" class="bg-slate-600 hover:bg-slate-500 text-white rounded-lg px-3 py-2 text-sm transition-colors text-left font-medium cursor-pointer">👨‍🏫 Docente</button>
+                                <button onclick="selectRole('administrativo')" class="bg-slate-600 hover:bg-slate-500 text-white rounded-lg px-3 py-2 text-sm transition-colors text-left font-medium cursor-pointer">💼 Administrativo</button>
+                            </div>
+                        </div>`;
+                        chatMessages.appendChild(row);
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    }, 1000);
+                }, 500);
+            }
         }
 
         async function sendChat() {
@@ -174,7 +293,7 @@
     </script>
 
     <script>
-        document.getElementById('ticketForm').addEventListener('submit', async function(e) {
+        document.getElementById('ticketForm').addEventListener('submit', async function (e) {
             e.preventDefault(); // Evita que la página se recargue
 
             const N8N_WEBHOOK_URL = CONFIG.N8N_WEBHOOK_URL;
@@ -230,4 +349,5 @@
         });
     </script>
 </body>
+
 </html>
